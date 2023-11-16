@@ -10,24 +10,22 @@ public partial class MainPage : ContentPage
     public ObservableCollection<WAMessage> WAmsgs { get; set; } = new();
     public Command RefreshCommand { get; set; }
     public WAMessage SelectedMsg { get; set; }
-    public string SelectedExcel { get; set; } 
+    public string SelectedExcel { get; set; }
+    public string SelectedExcelFullPath { get; set; }
 
 
     public MainPage()
 	{
+        SelectedExcel = "Silahkan Pilih Excel";
+
         RefreshCommand = new Command(async () =>
         {
-            // Simulate delay
-            await Task.Delay(2000);
-
-            await LoadExcel(SelectedExcel);
-
+            await LoadExcel(SelectedExcelFullPath);
             IsRefreshing = false;
             OnPropertyChanged(nameof(IsRefreshing));
         });
 
         BindingContext = this;
-
         InitializeComponent();
 	}
 
@@ -58,9 +56,11 @@ public partial class MainPage : ContentPage
                 if (result.FileName.EndsWith("xls", StringComparison.OrdinalIgnoreCase) ||
                     result.FileName.EndsWith("xlsx", StringComparison.OrdinalIgnoreCase))
                 {
-                    await DisplayAlert("Pesan", $"File {result.FileName} Terpilih", "OK");
-                    SelectedExcel = result.FullPath;
-                    var msgs = await LoadExcel(SelectedExcel);
+                    SelectedExcelFullPath = result.FullPath;
+                    SelectedExcel = result.FileName;
+                    OnPropertyChanged(nameof(SelectedExcel));
+
+                    var msgs = await LoadExcel(SelectedExcelFullPath);
                     WAmsgs.Clear();
                     foreach (var msg in msgs)
                     {
